@@ -1,6 +1,6 @@
 # cpp-igblast-wrapper
 
-![C++](https://img.shields.io/badge/C%++-17-blue.svg)
+![C++](https://img.shields.io/badge/C++-17-blue.svg)
 ![CMake](https://img.shields.io/badge/CMake-3.16+-success.svg)
 ![IgBLAST](https://img.shields.io/badge/IgBLAST-1.22.0-orange.svg)
 
