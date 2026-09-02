@@ -111,7 +111,7 @@ std::vector<std::string> build_output_header(const std::vector<std::string>& inp
 
 }  // namespace
 
-void map_airr_to_imgt_summary(const std::string& airr_path, const std::string& output_path) {
+void map_airr_to_imgt_summary(const std::string& airr_path, std::ostream& out) {
     std::ifstream in(airr_path);
     if (!in) {
         throw std::runtime_error("Failed to open AIRR TSV: " + airr_path);
@@ -126,11 +126,6 @@ void map_airr_to_imgt_summary(const std::string& airr_path, const std::string& o
     const std::unordered_map<std::string, std::size_t> header_index = build_header_index(input_header);
     const std::vector<std::string> output_header = build_output_header(input_header);
     const std::size_t input_column_count = input_header.size();
-
-    std::ofstream out(output_path);
-    if (!out) {
-        throw std::runtime_error("Failed to open output TSV: " + output_path);
-    }
 
     write_row(out, output_header);
 
@@ -158,4 +153,12 @@ void map_airr_to_imgt_summary(const std::string& airr_path, const std::string& o
 
         write_row(out, output_row);
     }
+}
+
+void map_airr_to_imgt_summary(const std::string& airr_path, const std::string& output_path) {
+    std::ofstream out(output_path);
+    if (!out) {
+        throw std::runtime_error("Failed to open output TSV: " + output_path);
+    }
+    map_airr_to_imgt_summary(airr_path, out);
 }
