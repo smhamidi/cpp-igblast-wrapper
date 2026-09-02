@@ -5,6 +5,24 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Determine the platform: 'macos' or 'linux' (can also be manually overridden with -DIGBLAST_PLATFORM=...)
+if(NOT DEFINED IGBLAST_PLATFORM)
+    if(APPLE)
+        set(IGBLAST_PLATFORM "macos")
+    elseif(UNIX)
+        set(IGBLAST_PLATFORM "linux")
+    else()
+        message(FATAL_ERROR "Unsupported platform: ${CMAKE_SYSTEM_NAME}")
+    endif()
+endif()
+
+message(STATUS "Target IgBLAST platform: ${IGBLAST_PLATFORM}")
+
+set(IGBLAST_DIR "${CMAKE_SOURCE_DIR}/data/ncbi-igblast-1.22.0-${IGBLAST_PLATFORM}")
+if(NOT EXISTS "${IGBLAST_DIR}")
+    message(FATAL_ERROR "IgBLAST directory not found: ${IGBLAST_DIR}")
+endif()
+
 find_program(XXD_EXECUTABLE xxd)
 
 if(XXD_EXECUTABLE)
@@ -18,8 +36,10 @@ file(MAKE_DIRECTORY "${GENERATED_DIR}")
 
 set(EMBED_SPEC "")
 
-list(APPEND EMBED_SPEC "bin/igblastn|${CMAKE_SOURCE_DIR}/data/ncbi-igblast-1.22.0/bin/igblastn|1")
+# Embed platform-specific igblastn binary (always extracted to bin/igblastn at runtime)
+list(APPEND EMBED_SPEC "bin/igblastn|${IGBLAST_DIR}/bin/igblastn|1")
 
+# Embed common compiled human IMGT databases
 file(GLOB COMPILED_DB_FILES LIST_DIRECTORIES false "${CMAKE_SOURCE_DIR}/data/compiled_db/*")
 list(SORT COMPILED_DB_FILES)
 foreach(DB_FILE IN LISTS COMPILED_DB_FILES)
@@ -27,8 +47,9 @@ foreach(DB_FILE IN LISTS COMPILED_DB_FILES)
     list(APPEND EMBED_SPEC "database/${DB_NAME}|${DB_FILE}|0")
 endforeach()
 
+# Embed internal human data and auxiliary file from selected platform directory
 file(GLOB INTERNAL_HUMAN_FILES LIST_DIRECTORIES false
-     "${CMAKE_SOURCE_DIR}/data/ncbi-igblast-1.22.0/internal_data/human/*")
+     "${IGBLAST_DIR}/internal_data/human/*")
 list(SORT INTERNAL_HUMAN_FILES)
 foreach(INTERNAL_FILE IN LISTS INTERNAL_HUMAN_FILES)
     get_filename_component(INTERNAL_NAME "${INTERNAL_FILE}" NAME)
@@ -36,7 +57,7 @@ foreach(INTERNAL_FILE IN LISTS INTERNAL_HUMAN_FILES)
 endforeach()
 
 list(APPEND EMBED_SPEC
-     "optional_file/human_gl.aux|${CMAKE_SOURCE_DIR}/data/ncbi-igblast-1.22.0/optional_file/human_gl.aux|0")
+     "optional_file/human_gl.aux|${IGBLAST_DIR}/optional_file/human_gl.aux|0")
 
 set(EMBED_HEADERS "")
 set(MANIFEST_INCLUDES "")

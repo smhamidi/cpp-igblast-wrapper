@@ -9,6 +9,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <string>
+#include <unistd.h>
 #include <system_error>
 #include <vector>
 
